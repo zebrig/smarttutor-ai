@@ -6,7 +6,7 @@ import { MaterialView } from './components/MaterialView';
 import { SessionView } from './components/SessionView';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { StudyMaterial, QuizSession, AnalysisResult, QuizType, QuizStatus, PendingUpload } from './types';
-import { generateQuestions, analyzePageContent } from './services/geminiService';
+import { generateQuestions, analyzePageContent, analyzeTextContent } from './services/geminiService';
 import { extractPDFPages } from './services/pdfService';
 import {
   getAllMaterials,
@@ -120,6 +120,10 @@ const AppContent: React.FC = () => {
         if (pages.length > 0) {
           return pages[0].image;
         }
+      } else if (file.type === 'text') {
+        // For text, the file IS the placeholder image
+        const dataUrl = await fileToBase64(file.file);
+        return dataUrl;
       }
     } catch (e) {
       console.error('Failed to generate preview:', e);
@@ -148,19 +152,27 @@ const AppContent: React.FC = () => {
       });
 
       try {
-        // Get full-size image
         let imageBase64: string;
-        if (queuedFile.type === 'pdf_page' && queuedFile.pageNumber) {
-          const pages = await extractPDFPages(queuedFile.file, [queuedFile.pageNumber]);
-          if (pages.length === 0) throw new Error('Failed to extract PDF page');
-          imageBase64 = pages[0].image;
-        } else {
-          imageBase64 = await fileToBase64(queuedFile.file);
-        }
+        let analysis: AnalysisResult;
 
-        // Analyze with Gemini
-        const base64Data = imageBase64.split(',')[1];
-        const analysis = await analyzePageContent(base64Data);
+        if (queuedFile.type === 'text' && queuedFile.rawText) {
+          // Text type: use placeholder image and analyze text directly
+          imageBase64 = await fileToBase64(queuedFile.file);
+          analysis = await analyzeTextContent(queuedFile.rawText);
+        } else {
+          // Image/PDF type: extract image and analyze via OCR
+          if (queuedFile.type === 'pdf_page' && queuedFile.pageNumber) {
+            const pages = await extractPDFPages(queuedFile.file, [queuedFile.pageNumber]);
+            if (pages.length === 0) throw new Error('Failed to extract PDF page');
+            imageBase64 = pages[0].image;
+          } else {
+            imageBase64 = await fileToBase64(queuedFile.file);
+          }
+
+          // Analyze with Gemini OCR
+          const base64Data = imageBase64.split(',')[1];
+          analysis = await analyzePageContent(base64Data);
+        }
 
         // Create material
         await handleCreateMaterial(imageBase64, analysis);
@@ -255,7 +267,8 @@ const AppContent: React.FC = () => {
         queuedFile: {
           type: file.type,
           file: file.file,
-          pageNumber: file.pageNumber
+          pageNumber: file.pageNumber,
+          rawText: file.rawText // For text type
         }
       });
     }
@@ -296,7 +309,8 @@ const AppContent: React.FC = () => {
       type: pending.queuedFile.type,
       file: pending.queuedFile.file,
       pageNumber: pending.queuedFile.pageNumber,
-      fileName: pending.fileName
+      fileName: pending.fileName,
+      rawText: pending.queuedFile.rawText // For text type
     };
     uploadQueueRef.current.push(queuedFile);
 

@@ -164,6 +164,62 @@ CRITICAL: Output in the SAME LANGUAGE as source. Paraphrase - do not copy verbat
   return result;
 };
 
+// Analyze pasted text (no image/OCR needed - text is provided by user)
+export const analyzeTextContent = async (rawText: string): Promise<AnalysisResult> => {
+  const model = getModel();
+
+  const responseSchema: Schema = {
+    type: Type.OBJECT,
+    properties: {
+      title: { type: Type.STRING, description: "Topic title based on the text content." },
+      summary: { type: Type.STRING, description: "Brief summary of the text." },
+      mode: {
+        type: Type.STRING,
+        enum: [SessionMode.THEORY, SessionMode.PRACTICE],
+        description: "THEORY for explanatory/informational content, PRACTICE for exercises/problems."
+      }
+    },
+    required: ["title", "summary", "mode"]
+  };
+
+  const ai = getAiClient();
+
+  const prompt = `Analyze this educational text and provide:
+1. A descriptive TITLE for this learning topic
+2. A brief SUMMARY explaining the key concepts
+3. Determine MODE: "THEORY" for explanatory content, "PRACTICE" for exercises/problems
+
+TEXT TO ANALYZE:
+"""
+${rawText.substring(0, 15000)}
+"""
+
+CRITICAL: Output in the SAME LANGUAGE as the input text.`;
+
+  const response = await ai.models.generateContent({
+    model,
+    contents: { parts: [{ text: prompt }] },
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: responseSchema
+    }
+  });
+
+  const text = extractTextFromResponse(response);
+  const parsed = JSON.parse(text);
+
+  // Return with the original text as extractedText
+  const result: AnalysisResult = {
+    title: parsed.title,
+    summary: parsed.summary,
+    mode: parsed.mode,
+    extractedText: rawText, // User's text is already the "OCR" result
+    isParaphrased: false
+  };
+
+  return result;
+};
+
 interface GenerationParams {
   imageBase64: string;
   extractedText: string;

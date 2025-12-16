@@ -31,6 +31,12 @@ export const translations = {
     back: 'Back',
     cancel: 'Cancel',
     retry: 'Retry',
+    uploadFile: 'Upload File',
+    pasteText: 'Paste Text',
+    pastedText: 'Pasted Text',
+    pasteTextPlaceholder: 'Paste your study material text here...',
+    createFromText: 'Create from Text',
+    textWillBeAnalyzed: 'Text will be analyzed to generate quiz questions',
 
     // MaterialView
     uploaded: 'Uploaded',
@@ -165,6 +171,12 @@ export const translations = {
     back: 'Wstecz',
     cancel: 'Anuluj',
     retry: 'Ponów',
+    uploadFile: 'Prześlij plik',
+    pasteText: 'Wklej tekst',
+    pastedText: 'Wklejony tekst',
+    pasteTextPlaceholder: 'Wklej tutaj tekst do nauki...',
+    createFromText: 'Utwórz z tekstu',
+    textWillBeAnalyzed: 'Tekst zostanie przeanalizowany do generowania pytań',
 
     // MaterialView
     uploaded: 'Przesłano',
@@ -299,6 +311,12 @@ export const translations = {
     back: 'Назад',
     cancel: 'Отмена',
     retry: 'Повторить',
+    uploadFile: 'Загрузить файл',
+    pasteText: 'Вставить текст',
+    pastedText: 'Вставленный текст',
+    pasteTextPlaceholder: 'Вставьте сюда текст для изучения...',
+    createFromText: 'Создать из текста',
+    textWillBeAnalyzed: 'Текст будет проанализирован для генерации вопросов',
 
     // MaterialView
     uploaded: 'Загружено',
@@ -433,6 +451,12 @@ export const translations = {
     back: 'Назад',
     cancel: 'Адмена',
     retry: 'Паўтарыць',
+    uploadFile: 'Загрузіць файл',
+    pasteText: 'Уставіць тэкст',
+    pastedText: 'Устаўлены тэкст',
+    pasteTextPlaceholder: 'Устаўце сюды тэкст для вывучэння...',
+    createFromText: 'Стварыць з тэксту',
+    textWillBeAnalyzed: 'Тэкст будзе прааналізаваны для генерацыі пытанняў',
 
     // MaterialView
     uploaded: 'Загружана',

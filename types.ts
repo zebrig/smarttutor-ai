@@ -71,9 +71,10 @@ export interface AnalysisResult {
 export type PendingUploadStatus = 'queued' | 'processing' | 'retrying' | 'done' | 'failed';
 
 export interface PendingUploadFile {
-  type: 'image' | 'pdf_page';
+  type: 'image' | 'pdf_page' | 'text';
   file: File;
   pageNumber?: number;
+  rawText?: string; // For text type - the user's pasted text
 }
 
 export interface PendingUpload {

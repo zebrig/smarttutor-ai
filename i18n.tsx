@@ -110,7 +110,10 @@ export const translations = {
 
     // Dashboard generation
     selectedMaterials: '{count} selected',
+    selected: 'selected',
     selectAll: 'Select all',
+    all: 'All',
+    clear: 'Clear',
     generateForSelected: 'Generate tests',
     generating: 'Generating...',
     testsTotal: '{count} tests',
@@ -250,7 +253,10 @@ export const translations = {
 
     // Dashboard generation
     selectedMaterials: '{count} wybranych',
+    selected: 'wybrano',
     selectAll: 'Wybierz wszystko',
+    all: 'Wszystko',
+    clear: 'Wyczyść',
     generateForSelected: 'Generuj testy',
     generating: 'Generowanie...',
     testsTotal: '{count} testów',
@@ -390,7 +396,10 @@ export const translations = {
 
     // Dashboard generation
     selectedMaterials: '{count} выбрано',
+    selected: 'выбрано',
     selectAll: 'Выбрать все',
+    all: 'Все',
+    clear: 'Сброс',
     generateForSelected: 'Сгенерировать тесты',
     generating: 'Генерация...',
     testsTotal: '{count} тестов',
@@ -530,7 +539,10 @@ export const translations = {
 
     // Dashboard generation
     selectedMaterials: '{count} выбрана',
+    selected: 'выбрана',
     selectAll: 'Выбраць усё',
+    all: 'Усё',
+    clear: 'Скід',
     generateForSelected: 'Згенераваць тэсты',
     generating: 'Генерацыя...',
     testsTotal: '{count} тэстаў',

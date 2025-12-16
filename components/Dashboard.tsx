@@ -152,31 +152,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Selection Mode Bar */}
       {selectionMode && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center gap-4">
-            <span className="text-indigo-700 font-medium">
-              {t('selectedMaterials', { count: selectedIds.size })}
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-4">
+            <span className="text-indigo-700 font-medium text-sm sm:text-base">
+              {selectedIds.size} {t('selected')}
             </span>
-            <button
-              onClick={selectAll}
-              className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-            >
-              {t('selectAll')}
-            </button>
-            <button
-              onClick={clearSelection}
-              className="text-sm text-slate-500 hover:text-slate-700 font-medium"
-            >
-              {t('clearSelection')}
-            </button>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button
+                onClick={selectAll}
+                className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+              >
+                {t('all')}
+              </button>
+              <button
+                onClick={clearSelection}
+                className="text-xs sm:text-sm text-slate-500 hover:text-slate-700 font-medium"
+              >
+                {t('clear')}
+              </button>
+            </div>
           </div>
           <button
             onClick={handleGenerateSelected}
             disabled={selectedIds.size === 0}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg font-medium transition-all"
+            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all"
           >
-            <Sparkles size={18} />
-            {t('generateForSelected')}
+            <Sparkles size={16} />
+            {t('generate')}
           </button>
         </div>
       )}

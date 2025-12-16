@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, CheckCircle, XCircle, RefreshCw, BarChart2, Check, AlertCircle, Eye, Play, Loader2, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle, XCircle, RefreshCw, BarChart2, Check, AlertCircle, Eye, Play, Loader2, X } from 'lucide-react';
 import { StudyMaterial, QuizSession, QuizStatus, QuizType, UserAnswer } from '../types';
 import { generateQuestions } from '../services/geminiService';
 import { useI18n } from '../i18n';
@@ -89,7 +89,7 @@ export const SessionView: React.FC<SessionViewProps> = ({
   };
 
   const handleNext = () => {
-    if (currentQIndex < session.questions.length - 1) {
+    if (currentQIndex < session.questions.length) {
       setCurrentQIndex(prev => prev + 1);
     }
   };
@@ -135,58 +135,76 @@ export const SessionView: React.FC<SessionViewProps> = ({
     );
   }
 
+  // Determine if we show the "Result" card.
+  // Summary is shown when index equals the questions length (one past the last)
+  const showSummary = currentQIndex === session.questions.length;
+
   // Get current question with bounds check
   const currentQ = session.questions[currentQIndex];
+  const isLastQuestion = currentQIndex === session.questions.length - 1;
 
-  // Safety check - if currentQ is undefined, show error
-  if (!currentQ && session.questions.length > 0) {
+  // Safety check - if currentQ is undefined and we're not showing summary, reset
+  if (!currentQ && !showSummary && session.questions.length > 0) {
     setCurrentQIndex(0);
     return null;
   }
-
-  // Determine if we show the "Result" card.
-  const isLastQuestion = currentQIndex === session.questions.length - 1;
-  const showSummary = isReadOnly && isLastQuestion;
   const accuracy = session.score.total > 0 ? Math.round((session.score.correct / session.score.total) * 100) : 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      {/* Header */}
-      <div className="bg-white px-4 py-3 shadow-sm border-b border-slate-200 flex items-center justify-between sticky top-0 z-10">
-        <button onClick={onBack} className="text-slate-500 hover:text-indigo-600 flex items-center gap-2 transition-colors">
-          <ArrowLeft size={20} />
-          <span className="hidden sm:inline font-medium">{t('toMaterial')}</span>
-        </button>
-
-        <div className="flex items-center gap-4">
-          <div className="text-xs text-right hidden sm:block">
-            <div className="font-bold text-slate-700">{material.title}</div>
-            <div className="text-slate-400">
-              {session.type === QuizType.MISTAKES_FIX ? t('mistakeReview') : t('standardTest')}
-            </div>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ${isReadOnly ? 'bg-slate-100 text-slate-600' : 'bg-indigo-100 text-indigo-600'}`}>
-            {isReadOnly ? t('review') : t('test')}
-          </div>
-        </div>
-      </div>
-
       <main className="flex-1 max-w-2xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
-        
-        {/* Progress */}
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">
-           <span>{t('question')} {currentQIndex + 1} / {session.questions.length}</span>
-           {isReadOnly && <span>{t('result')}: {accuracy}%</span>}
+
+        {/* Back button */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={onBack}
+            className="text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1 text-sm"
+          >
+            <ArrowLeft size={16} />
+            <span>{t('back')}</span>
+          </button>
+          {isReadOnly ? (
+            <span className="text-xs text-slate-400 font-medium">{t('result')}: {accuracy}%</span>
+          ) : session.score.total > 0 ? (
+            <span className="flex items-center gap-1 text-xs font-medium">
+              <span className="text-green-600">{session.score.correct}</span>
+              <span className="text-slate-400">/</span>
+              <span className="text-red-500">{session.score.total - session.score.correct}</span>
+            </span>
+          ) : null}
         </div>
+
+        {/* Question navigation - only show during active test */}
+        {!isReadOnly && (
+          <div className="flex items-center justify-center gap-4 text-sm text-slate-500 mb-2">
+            <button
+              onClick={handlePrev}
+              disabled={currentQIndex === 0}
+              className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="font-medium">
+              {t('question')} {currentQIndex + 1} / {session.questions.length}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={currentQIndex === session.questions.length - 1 || !isAnswered}
+              className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
         <div className="w-full bg-slate-200 h-1.5 rounded-full mb-4 overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 ${isReadOnly ? 'bg-slate-400' : 'bg-indigo-600'}`}
-            style={{ width: `${((currentQIndex + 1) / session.questions.length) * 100}%` }}
+            className={`h-full transition-all duration-300 ${isReadOnly || showSummary ? 'bg-slate-400' : 'bg-indigo-600'}`}
+            style={{ width: showSummary ? '100%' : `${((currentQIndex + 1) / session.questions.length) * 100}%` }}
           ></div>
         </div>
 
         {/* Quick navigation in review mode */}
-        {isReadOnly && !showSummary && (
+        {isReadOnly && (
           <div className="flex flex-wrap gap-1.5 mb-6 justify-center">
             {session.questions.map((q, idx) => {
               const answer = session.userAnswers[q.id];
@@ -210,6 +228,17 @@ export const SessionView: React.FC<SessionViewProps> = ({
                 </button>
               );
             })}
+            {/* Results button */}
+            <button
+              onClick={() => setCurrentQIndex(session.questions.length)}
+              className={`px-3 h-8 rounded-lg text-xs font-bold transition-all ${
+                showSummary
+                  ? 'ring-2 ring-offset-2 ring-indigo-500 bg-indigo-100 text-indigo-700'
+                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+              }`}
+            >
+              {t('result')}
+            </button>
           </div>
         )}
 
@@ -360,10 +389,9 @@ export const SessionView: React.FC<SessionViewProps> = ({
                     </button>
                     <button
                       onClick={handleNext}
-                      disabled={isLastQuestion && !showSummary}
                       className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
                     >
-                      {currentQIndex === session.questions.length - 1 ? t('toResults') : t('next')}
+                      {isLastQuestion ? t('toResults') : t('next')}
                     </button>
                   </div>
                 </div>

@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@google/genai": "^1.33.0",
+    "idb": "^8.0.3",
     "lucide-react": "^0.561.0",
+    "pdfjs-dist": "^5.4.449",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },

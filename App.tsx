@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { UploadView } from './components/UploadView';
 import { MaterialView } from './components/MaterialView';
@@ -6,11 +6,16 @@ import { SessionView } from './components/SessionView';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { StudyMaterial, QuizSession, AnalysisResult, QuizType, QuizStatus } from './types';
 import { generateQuestions } from './services/geminiService';
+import {
+  getAllMaterials,
+  getAllSessions,
+  saveMaterial,
+  saveSession,
+  deleteMaterial,
+  deleteSessionsByMaterial,
+  migrateFromLocalStorage
+} from './services/storageService';
 import { useI18n } from './i18n';
-
-// Constants
-const STORAGE_MATERIALS_KEY = 'smart_tutor_materials';
-const STORAGE_SESSIONS_KEY = 'smart_tutor_sessions';
 
 enum ViewState {
   DASHBOARD = 'DASHBOARD',
@@ -22,16 +27,16 @@ enum ViewState {
 const App: React.FC = () => {
   const { t } = useI18n();
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   // Data State
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
   const [quizSessions, setQuizSessions] = useState<QuizSession[]>([]);
-  
+
   // UI State
   const [activeMaterialId, setActiveMaterialId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [storageError, setStorageError] = useState(false);
 
   // Check for API key on mount
   useEffect(() => {
@@ -41,33 +46,32 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Load from LocalStorage
+  // Load from IndexedDB
   useEffect(() => {
-    try {
-      const storedMaterials = localStorage.getItem(STORAGE_MATERIALS_KEY);
-      const storedSessions = localStorage.getItem(STORAGE_SESSIONS_KEY);
-      if (storedMaterials) setMaterials(JSON.parse(storedMaterials));
-      if (storedSessions) setQuizSessions(JSON.parse(storedSessions));
-    } catch (e) {
-      console.error("Failed to load data", e);
-    }
+    const loadData = async () => {
+      try {
+        // First, try to migrate from localStorage
+        await migrateFromLocalStorage();
+
+        // Then load from IndexedDB
+        const [loadedMaterials, loadedSessions] = await Promise.all([
+          getAllMaterials(),
+          getAllSessions()
+        ]);
+        setMaterials(loadedMaterials);
+        setQuizSessions(loadedSessions);
+      } catch (e) {
+        console.error("Failed to load data", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
-  // Save to LocalStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_MATERIALS_KEY, JSON.stringify(materials));
-      localStorage.setItem(STORAGE_SESSIONS_KEY, JSON.stringify(quizSessions));
-      setStorageError(false);
-    } catch (e) {
-      console.error("Failed to save to localStorage", e);
-      setStorageError(true);
-    }
-  }, [materials, quizSessions]);
-
-  const handleCreateMaterial = (image: string, analysis: AnalysisResult) => {
+  const handleCreateMaterial = useCallback(async (image: string, analysis: AnalysisResult) => {
     const newMaterial: StudyMaterial = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + '_' + Math.random().toString(36).slice(2, 7),
       title: analysis.title,
       summary: analysis.summary,
       mode: analysis.mode,
@@ -76,17 +80,21 @@ const App: React.FC = () => {
       imageBase64: image,
     };
 
-    setMaterials(prev => [newMaterial, ...prev]);
-    setActiveMaterialId(newMaterial.id);
-    setView(ViewState.MATERIAL_DETAIL);
-  };
+    try {
+      await saveMaterial(newMaterial);
+      setMaterials(prev => [newMaterial, ...prev]);
+      // Don't navigate here - let UploadView control navigation after batch processing
+    } catch (e) {
+      console.error("Failed to save material", e);
+    }
+  }, []);
 
   const handleStartQuiz = async (type: QuizType, baseSessionId?: string) => {
     if (!activeMaterialId) return;
-    
+
     // If starting a mistakes quiz, we need to gather mistakes from the baseSession
     let previousMistakes: { question: string, wrongAnswer: string, explanation: string }[] | undefined = undefined;
-    
+
     if (type === QuizType.MISTAKES_FIX && baseSessionId) {
       const baseSession = quizSessions.find(s => s.id === baseSessionId);
       if (baseSession) {
@@ -105,7 +113,7 @@ const App: React.FC = () => {
 
     const newSessionId = Date.now().toString();
     let initialQuestions: any[] = [];
-    
+
     // If this is a mistake fix quiz, we generate questions upfront to ensure context is passed
     if (type === QuizType.MISTAKES_FIX && previousMistakes && previousMistakes.length > 0) {
        const material = materials.find(m => m.id === activeMaterialId);
@@ -140,22 +148,38 @@ const App: React.FC = () => {
       score: { correct: 0, total: 0 }
     };
 
-    setQuizSessions(prev => [...prev, newSession]);
-    setActiveSessionId(newSessionId);
-    setView(ViewState.SESSION);
+    try {
+      await saveSession(newSession);
+      setQuizSessions(prev => [...prev, newSession]);
+      setActiveSessionId(newSessionId);
+      setView(ViewState.SESSION);
+    } catch (e) {
+      console.error("Failed to save session", e);
+    }
   };
 
-  const handleUpdateSession = (updatedSession: QuizSession) => {
-    setQuizSessions(prev => prev.map(s => s.id === updatedSession.id ? updatedSession : s));
-  };
+  const handleUpdateSession = useCallback(async (updatedSession: QuizSession) => {
+    try {
+      await saveSession(updatedSession);
+      setQuizSessions(prev => prev.map(s => s.id === updatedSession.id ? updatedSession : s));
+    } catch (e) {
+      console.error("Failed to update session", e);
+    }
+  }, []);
 
-  const handleDeleteMaterial = (id: string) => {
+  const handleDeleteMaterial = async (id: string) => {
     if (confirm(t('deleteConfirm'))) {
-      setMaterials(prev => prev.filter(m => m.id !== id));
-      setQuizSessions(prev => prev.filter(s => s.materialId !== id));
-      if (activeMaterialId === id) {
-        setActiveMaterialId(null);
-        setView(ViewState.DASHBOARD);
+      try {
+        await deleteMaterial(id);
+        await deleteSessionsByMaterial(id);
+        setMaterials(prev => prev.filter(m => m.id !== id));
+        setQuizSessions(prev => prev.filter(s => s.materialId !== id));
+        if (activeMaterialId === id) {
+          setActiveMaterialId(null);
+          setView(ViewState.DASHBOARD);
+        }
+      } catch (e) {
+        console.error("Failed to delete material", e);
       }
     }
   };
@@ -164,12 +188,20 @@ const App: React.FC = () => {
   const activeSession = quizSessions.find(s => s.id === activeSessionId);
   const materialSessions = activeMaterialId ? quizSessions.filter(s => s.materialId === activeMaterialId) : [];
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-pulse text-slate-400">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen font-sans text-slate-900 bg-slate-50">
-      
+
       {isSettingsOpen && (
-        <ApiKeyModal 
-          onClose={() => setIsSettingsOpen(false)} 
+        <ApiKeyModal
+          onClose={() => setIsSettingsOpen(false)}
           onSave={() => setIsSettingsOpen(false)}
           forceOpen={!localStorage.getItem('gemini_api_key')}
         />
@@ -182,12 +214,11 @@ const App: React.FC = () => {
           onSelectMaterial={(m) => { setActiveMaterialId(m.id); setView(ViewState.MATERIAL_DETAIL); }}
           onDeleteMaterial={handleDeleteMaterial}
           onOpenSettings={() => setIsSettingsOpen(true)}
-          storageError={storageError}
         />
       )}
 
       {view === ViewState.UPLOAD && (
-        <UploadView 
+        <UploadView
           onCancel={() => setView(ViewState.DASHBOARD)}
           onAnalysisComplete={handleCreateMaterial}
           onOpenSettings={() => setIsSettingsOpen(true)}
@@ -195,7 +226,7 @@ const App: React.FC = () => {
       )}
 
       {view === ViewState.MATERIAL_DETAIL && activeMaterial && (
-        <MaterialView 
+        <MaterialView
           material={activeMaterial}
           sessions={materialSessions}
           onBack={() => { setActiveMaterialId(null); setView(ViewState.DASHBOARD); }}
@@ -205,7 +236,7 @@ const App: React.FC = () => {
       )}
 
       {view === ViewState.SESSION && activeSession && activeMaterial && (
-        <SessionView 
+        <SessionView
           material={activeMaterial}
           session={activeSession}
           onUpdateSession={handleUpdateSession}

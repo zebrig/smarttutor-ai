@@ -84,6 +84,23 @@ export const translations = {
     storageWarningDesc: 'Local storage is {size} MB. Please delete old materials to free up space.',
     storageError: 'Storage unavailable',
     storageErrorDesc: 'Cannot save data. You may be in private browsing mode or storage is full. Delete old materials or exit private mode.',
+
+    // PDF & Batch upload
+    selectPages: 'Select Pages',
+    pdfPageCount: '{count} pages in document',
+    maxPagesWarning: 'Maximum {max} pages',
+    selectedCount: '{count} of {max} selected',
+    maxReached: 'Maximum reached',
+    selectFirst: 'Select first {count}',
+    clearSelection: 'Clear all',
+    processPages: 'Process {count} pages',
+    loadingPdf: 'Loading PDF...',
+    processingFiles: 'Processing files...',
+    processingProgress: 'Processing {current} of {total}...',
+    uploadFiles: 'Upload Files',
+    uploadSubtitleMulti: 'Select images or PDF files',
+    supportsFormatsMulti: 'Supports JPG, PNG, WEBP, PDF',
+    doNotCloseTab: 'Please do not close or minimize this tab until processing is complete',
   },
 
   pl: {
@@ -167,6 +184,23 @@ export const translations = {
     storageWarningDesc: 'Pamięć lokalna zajmuje {size} MB. Usuń stare materiały, aby zwolnić miejsce.',
     storageError: 'Magazyn niedostępny',
     storageErrorDesc: 'Nie można zapisać danych. Możesz być w trybie prywatnym lub magazyn jest pełny. Usuń stare materiały lub wyjdź z trybu prywatnego.',
+
+    // PDF & Batch upload
+    selectPages: 'Wybierz strony',
+    pdfPageCount: '{count} stron w dokumencie',
+    maxPagesWarning: 'Maksymalnie {max} stron',
+    selectedCount: '{count} z {max} wybranych',
+    maxReached: 'Osiągnięto maksimum',
+    selectFirst: 'Wybierz pierwsze {count}',
+    clearSelection: 'Wyczyść wszystko',
+    processPages: 'Przetwórz {count} stron',
+    loadingPdf: 'Ładowanie PDF...',
+    processingFiles: 'Przetwarzanie plików...',
+    processingProgress: 'Przetwarzanie {current} z {total}...',
+    uploadFiles: 'Prześlij pliki',
+    uploadSubtitleMulti: 'Wybierz zdjęcia lub pliki PDF',
+    supportsFormatsMulti: 'Obsługuje JPG, PNG, WEBP, PDF',
+    doNotCloseTab: 'Nie zamykaj ani nie minimalizuj tej karty do zakończenia przetwarzania',
   },
 
   ru: {
@@ -250,6 +284,23 @@ export const translations = {
     storageWarningDesc: 'Локальное хранилище занимает {size} МБ. Удалите старые материалы, чтобы освободить место.',
     storageError: 'Хранилище недоступно',
     storageErrorDesc: 'Не удаётся сохранить данные. Возможно, вы в приватном режиме или хранилище заполнено. Удалите старые материалы или выйдите из приватного режима.',
+
+    // PDF & Batch upload
+    selectPages: 'Выберите страницы',
+    pdfPageCount: '{count} страниц в документе',
+    maxPagesWarning: 'Максимум {max} страниц',
+    selectedCount: '{count} из {max} выбрано',
+    maxReached: 'Достигнут максимум',
+    selectFirst: 'Выбрать первые {count}',
+    clearSelection: 'Очистить всё',
+    processPages: 'Обработать {count} страниц',
+    loadingPdf: 'Загрузка PDF...',
+    processingFiles: 'Обработка файлов...',
+    processingProgress: 'Обработка {current} из {total}...',
+    uploadFiles: 'Загрузить файлы',
+    uploadSubtitleMulti: 'Выберите изображения или PDF файлы',
+    supportsFormatsMulti: 'Поддерживает JPG, PNG, WEBP, PDF',
+    doNotCloseTab: 'Не закрывайте и не сворачивайте вкладку до завершения обработки',
   },
 
   be: {
@@ -333,6 +384,23 @@ export const translations = {
     storageWarningDesc: 'Лакальнае сховішча займае {size} МБ. Выдаліце старыя матэрыялы, каб вызваліць месца.',
     storageError: 'Сховішча недаступна',
     storageErrorDesc: 'Не атрымліваецца захаваць даныя. Магчыма, вы ў прыватным рэжыме або сховішча запоўнена. Выдаліце старыя матэрыялы або выйдзіце з прыватнага рэжыму.',
+
+    // PDF & Batch upload
+    selectPages: 'Выберыце старонкі',
+    pdfPageCount: '{count} старонак у дакуменце',
+    maxPagesWarning: 'Максімум {max} старонак',
+    selectedCount: '{count} з {max} выбрана',
+    maxReached: 'Дасягнуты максімум',
+    selectFirst: 'Выбраць першыя {count}',
+    clearSelection: 'Ачысціць усё',
+    processPages: 'Апрацаваць {count} старонак',
+    loadingPdf: 'Загрузка PDF...',
+    processingFiles: 'Апрацоўка файлаў...',
+    processingProgress: 'Апрацоўка {current} з {total}...',
+    uploadFiles: 'Загрузіць файлы',
+    uploadSubtitleMulti: 'Выберыце выявы або PDF файлы',
+    supportsFormatsMulti: 'Падтрымлівае JPG, PNG, WEBP, PDF',
+    doNotCloseTab: 'Не зачыняйце і не згортвайце ўкладку да завяршэння апрацоўкі',
   },
 } as const;
 

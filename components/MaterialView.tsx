@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StudyMaterial, QuizSession, QuizType, QuizStatus } from '../types';
-import { Play, ArrowLeft, Clock, AlertCircle, CheckCircle, BarChart2, Plus, X, ZoomIn, FileText } from 'lucide-react';
+import { Sparkles, ArrowLeft, Clock, AlertCircle, CheckCircle, BarChart2, Plus, X, ZoomIn, FileText, Loader2, Play } from 'lucide-react';
 import { useI18n } from '../i18n';
 
 interface MaterialViewProps {
@@ -22,8 +22,10 @@ export const MaterialView: React.FC<MaterialViewProps> = ({
   const [showFullImage, setShowFullImage] = useState(false);
   const [showExtractedText, setShowExtractedText] = useState(false);
 
-  // Sort sessions: In Progress first, then newest completed
+  // Sort sessions: Generating first, then In Progress, then newest completed
   const sortedSessions = [...sessions].sort((a, b) => {
+    if (a.status === QuizStatus.GENERATING && b.status !== QuizStatus.GENERATING) return -1;
+    if (b.status === QuizStatus.GENERATING && a.status !== QuizStatus.GENERATING) return 1;
     if (a.status === QuizStatus.IN_PROGRESS && b.status !== QuizStatus.IN_PROGRESS) return -1;
     if (b.status === QuizStatus.IN_PROGRESS && a.status !== QuizStatus.IN_PROGRESS) return 1;
     return b.createdAt - a.createdAt;
@@ -139,8 +141,8 @@ export const MaterialView: React.FC<MaterialViewProps> = ({
             onClick={() => onStartQuiz(QuizType.STANDARD)}
             className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 transform hover:scale-105"
           >
-            <Play size={20} fill="currentColor" />
-            {t('startNewTest')}
+            <Sparkles size={20} />
+            {t('createNewTest')}
           </button>
         </div>
       </div>
@@ -159,9 +161,40 @@ export const MaterialView: React.FC<MaterialViewProps> = ({
               const accuracy = getAccuracy(session);
               const isPerfect = accuracy >= 95;
               const isInProgress = session.status === QuizStatus.IN_PROGRESS;
+              const isGenerating = session.status === QuizStatus.GENERATING;
+
+              // Generating placeholder
+              if (isGenerating) {
+                return (
+                  <div
+                    key={session.id}
+                    className="p-4 bg-white rounded-xl border border-amber-200 ring-1 ring-amber-50 shadow-md flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-amber-100 text-amber-600">
+                        <Loader2 size={20} className="animate-spin" />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-800">
+                            {session.type === QuizType.MISTAKES_FIX ? t('mistakeReview') : t('standardTest')}
+                          </h3>
+                          <span className="text-[10px] uppercase font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">
+                            {t('generating')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {t('generatingQuestions')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
 
               return (
-                <div 
+                <div
                   key={session.id}
                   onClick={() => onSelectQuiz(session.id)}
                   className={`group p-4 bg-white rounded-xl border transition-all cursor-pointer flex items-center justify-between
@@ -170,19 +203,22 @@ export const MaterialView: React.FC<MaterialViewProps> = ({
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm
-                      ${isInProgress ? 'bg-indigo-100 text-indigo-600 animate-pulse' : 
-                        isPerfect ? 'bg-green-100 text-green-700' : 
+                      ${isInProgress ? 'bg-indigo-100 text-indigo-600 animate-pulse' :
+                        isPerfect ? 'bg-green-100 text-green-700' :
                         accuracy < 50 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}
                     `}>
                       {isInProgress ? <Play size={20} fill="currentColor" /> : `${accuracy}%`}
                     </div>
-                    
+
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-slate-800">
                           {session.type === QuizType.MISTAKES_FIX ? t('mistakeReview') : t('standardTest')}
                         </h3>
-                        {isInProgress && (
+                        {isInProgress && !session.viewedAt && (
+                          <span className="text-[10px] uppercase font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">{t('new')}</span>
+                        )}
+                        {isInProgress && session.viewedAt && (
                           <span className="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">{t('active')}</span>
                         )}
                       </div>

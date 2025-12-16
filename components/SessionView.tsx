@@ -30,36 +30,15 @@ export const SessionView: React.FC<SessionViewProps> = ({
   // Determine mode
   const isReadOnly = session.status === QuizStatus.COMPLETED;
 
-  // Initialize questions if needed
+  // Show loading state for GENERATING sessions (shouldn't normally happen since they're not clickable)
+  const isGenerating = session.status === QuizStatus.GENERATING;
   useEffect(() => {
-    if (session.questions.length === 0 && !loading) {
-      const initQuestions = async () => {
-        setLoading(true);
-        try {
-          // Standard generation for new standard sessions (Mistake sessions are usually pre-generated in App.tsx)
-          // But if we fall through here for some reason:
-          const newQuestions = await generateQuestions({
-            imageBase64: material.imageBase64.split(',')[1],
-            extractedText: material.extractedText,
-            mode: material.mode,
-            quizType: session.type,
-          });
-          
-          if (newQuestions.length > 0) {
-             onUpdateSession({
-               ...session,
-               questions: newQuestions
-             });
-          }
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setLoading(false);
-        }
-      };
-      initQuestions();
+    if (isGenerating) {
+      setLoading(true);
+    } else {
+      setLoading(false);
     }
-  }, [session.id, session.questions.length]);
+  }, [isGenerating]);
 
   // Sync internal state when switching questions or session changes
   useEffect(() => {

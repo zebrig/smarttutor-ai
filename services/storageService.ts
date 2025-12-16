@@ -136,6 +136,11 @@ export async function saveSession(session: QuizSession): Promise<void> {
   await db.put('sessions', session);
 }
 
+export async function deleteSession(sessionId: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('sessions', sessionId);
+}
+
 export async function deleteSessionsByMaterial(materialId: string): Promise<void> {
   const db = await getDB();
   const sessions = await db.getAllFromIndex('sessions', 'by-material', materialId);

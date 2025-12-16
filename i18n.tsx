@@ -35,7 +35,7 @@ export const translations = {
     // MaterialView
     uploaded: 'Uploaded',
     testsCompletedCount: 'Tests completed',
-    startNewTest: 'Start New Test',
+    createNewTest: 'Create New Test',
     testHistory: 'Test History',
     noTestsYet: 'You haven\'t taken any tests for this material yet.',
     mistakeReview: 'Mistake Review',
@@ -101,6 +101,40 @@ export const translations = {
     uploadSubtitleMulti: 'Select images or PDF files',
     supportsFormatsMulti: 'Supports JPG, PNG, WEBP, PDF',
     doNotCloseTab: 'Please do not close or minimize this tab until processing is complete',
+
+    // Dashboard generation
+    selectedMaterials: '{count} selected',
+    selectAll: 'Select all',
+    generateForSelected: 'Generate tests',
+    generating: 'Generating...',
+    testsTotal: '{count} tests',
+    noTests: 'No tests yet',
+    generate: 'Generate',
+    generateQuiz: 'Generate quiz in background',
+
+    // Error handling
+    someFilesFailed: '{failed} of {total} files failed to process',
+    failedSoFar: '{count} failed',
+    partialSuccess: 'Partial Success',
+    successfullyProcessed: '{count} files processed successfully',
+    failedToProcess: '{count} files failed',
+    toDashboard: 'To Dashboard',
+    retryFailed: 'Retry {count} failed',
+
+    // Pending uploads
+    uploadFailed: 'Failed',
+    processing: 'Processing...',
+    retrying: 'Retrying...',
+    attempt: 'Attempt',
+    recitationError: 'Copyright protection blocked this content. The text cannot be extracted.',
+    unknownError: 'Unknown error occurred',
+    failedAfterAttempts: 'Failed after {count} attempts',
+    pleaseWait: 'Please wait...',
+    page: 'Page',
+
+    // Badges
+    new: 'New',
+    sources: 'Sources',
   },
 
   pl: {
@@ -135,7 +169,7 @@ export const translations = {
     // MaterialView
     uploaded: 'Przesłano',
     testsCompletedCount: 'Ukończonych testów',
-    startNewTest: 'Rozpocznij nowy test',
+    createNewTest: 'Utwórz nowy test',
     testHistory: 'Historia testów',
     noTestsYet: 'Nie wykonałeś jeszcze żadnych testów dla tego materiału.',
     mistakeReview: 'Praca nad błędami',
@@ -201,6 +235,40 @@ export const translations = {
     uploadSubtitleMulti: 'Wybierz zdjęcia lub pliki PDF',
     supportsFormatsMulti: 'Obsługuje JPG, PNG, WEBP, PDF',
     doNotCloseTab: 'Nie zamykaj ani nie minimalizuj tej karty do zakończenia przetwarzania',
+
+    // Dashboard generation
+    selectedMaterials: '{count} wybranych',
+    selectAll: 'Wybierz wszystko',
+    generateForSelected: 'Generuj testy',
+    generating: 'Generowanie...',
+    testsTotal: '{count} testów',
+    noTests: 'Brak testów',
+    generate: 'Generuj',
+    generateQuiz: 'Generuj test w tle',
+
+    // Error handling
+    someFilesFailed: '{failed} z {total} plików nie udało się przetworzyć',
+    failedSoFar: '{count} nie powiodło się',
+    partialSuccess: 'Częściowy sukces',
+    successfullyProcessed: '{count} plików przetworzonych pomyślnie',
+    failedToProcess: '{count} plików nie powiodło się',
+    toDashboard: 'Do panelu',
+    retryFailed: 'Ponów {count} nieudanych',
+
+    // Pending uploads
+    uploadFailed: 'Niepowodzenie',
+    processing: 'Przetwarzanie...',
+    retrying: 'Ponowna próba...',
+    attempt: 'Próba',
+    recitationError: 'Ochrona praw autorskich zablokowała tę treść. Tekst nie może zostać wyodrębniony.',
+    unknownError: 'Wystąpił nieznany błąd',
+    failedAfterAttempts: 'Niepowodzenie po {count} próbach',
+    pleaseWait: 'Proszę czekać...',
+    page: 'Strona',
+
+    // Badges
+    new: 'Nowy',
+    sources: 'Źródła',
   },
 
   ru: {
@@ -235,7 +303,7 @@ export const translations = {
     // MaterialView
     uploaded: 'Загружено',
     testsCompletedCount: 'Тестов пройдено',
-    startNewTest: 'Начать новый тест',
+    createNewTest: 'Создать новый тест',
     testHistory: 'История тестирования',
     noTestsYet: 'Вы ещё не проходили тесты по этому материалу.',
     mistakeReview: 'Работа над ошибками',
@@ -301,6 +369,40 @@ export const translations = {
     uploadSubtitleMulti: 'Выберите изображения или PDF файлы',
     supportsFormatsMulti: 'Поддерживает JPG, PNG, WEBP, PDF',
     doNotCloseTab: 'Не закрывайте и не сворачивайте вкладку до завершения обработки',
+
+    // Dashboard generation
+    selectedMaterials: '{count} выбрано',
+    selectAll: 'Выбрать все',
+    generateForSelected: 'Сгенерировать тесты',
+    generating: 'Генерация...',
+    testsTotal: '{count} тестов',
+    noTests: 'Нет тестов',
+    generate: 'Генерировать',
+    generateQuiz: 'Сгенерировать тест в фоне',
+
+    // Error handling
+    someFilesFailed: '{failed} из {total} файлов не удалось обработать',
+    failedSoFar: '{count} не удалось',
+    partialSuccess: 'Частичный успех',
+    successfullyProcessed: '{count} файлов обработано успешно',
+    failedToProcess: '{count} файлов не удалось',
+    toDashboard: 'На главную',
+    retryFailed: 'Повторить {count}',
+
+    // Pending uploads
+    uploadFailed: 'Ошибка',
+    processing: 'Обработка...',
+    retrying: 'Повторная попытка...',
+    attempt: 'Попытка',
+    recitationError: 'Защита авторских прав заблокировала контент. Текст не может быть извлечён.',
+    unknownError: 'Произошла неизвестная ошибка',
+    failedAfterAttempts: 'Ошибка после {count} попыток',
+    pleaseWait: 'Подождите...',
+    page: 'Страница',
+
+    // Badges
+    new: 'Новое',
+    sources: 'Источники',
   },
 
   be: {
@@ -335,7 +437,7 @@ export const translations = {
     // MaterialView
     uploaded: 'Загружана',
     testsCompletedCount: 'Тэстаў пройдзена',
-    startNewTest: 'Пачаць новы тэст',
+    createNewTest: 'Стварыць новы тэст',
     testHistory: 'Гісторыя тэсціравання',
     noTestsYet: 'Вы яшчэ не праходзілі тэсты па гэтым матэрыяле.',
     mistakeReview: 'Праца над памылкамі',
@@ -401,6 +503,40 @@ export const translations = {
     uploadSubtitleMulti: 'Выберыце выявы або PDF файлы',
     supportsFormatsMulti: 'Падтрымлівае JPG, PNG, WEBP, PDF',
     doNotCloseTab: 'Не зачыняйце і не згортвайце ўкладку да завяршэння апрацоўкі',
+
+    // Dashboard generation
+    selectedMaterials: '{count} выбрана',
+    selectAll: 'Выбраць усё',
+    generateForSelected: 'Згенераваць тэсты',
+    generating: 'Генерацыя...',
+    testsTotal: '{count} тэстаў',
+    noTests: 'Няма тэстаў',
+    generate: 'Генераваць',
+    generateQuiz: 'Згенераваць тэст у фоне',
+
+    // Error handling
+    someFilesFailed: '{failed} з {total} файлаў не атрымалася апрацаваць',
+    failedSoFar: '{count} не атрымалася',
+    partialSuccess: 'Частковы поспех',
+    successfullyProcessed: '{count} файлаў апрацавана паспяхова',
+    failedToProcess: '{count} файлаў не атрымалася',
+    toDashboard: 'На галоўную',
+    retryFailed: 'Паўтарыць {count}',
+
+    // Pending uploads
+    uploadFailed: 'Памылка',
+    processing: 'Апрацоўка...',
+    retrying: 'Паўторная спроба...',
+    attempt: 'Спроба',
+    recitationError: 'Абарона аўтарскіх правоў заблакавала кантэнт. Тэкст не можа быць здабыты.',
+    unknownError: 'Адбылася невядомая памылка',
+    failedAfterAttempts: 'Памылка пасля {count} спроб',
+    pleaseWait: 'Пачакайце...',
+    page: 'Старонка',
+
+    // Badges
+    new: 'Новае',
+    sources: 'Крыніцы',
   },
 } as const;
 

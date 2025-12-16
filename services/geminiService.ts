@@ -23,6 +23,31 @@ const extractTextFromResponse = (response: any): string => {
   return text;
 };
 
+// Retry helper with exponential backoff
+const withRetry = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> => {
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      // Don't retry on API key missing
+      if (error.message === "API_KEY_MISSING") throw error;
+
+      if (attempt < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 500;
+        console.log(`Retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+};
+
 export const analyzePageContent = async (imageBase64: string): Promise<AnalysisResult> => {
   const model = getModel();
 
@@ -32,8 +57,8 @@ export const analyzePageContent = async (imageBase64: string): Promise<AnalysisR
       title: { type: Type.STRING, description: "Topic title." },
       summary: { type: Type.STRING, description: "Brief summary." },
       extractedText: { type: Type.STRING, description: "The full text content extracted from the page (OCR)." },
-      mode: { 
-        type: Type.STRING, 
+      mode: {
+        type: Type.STRING,
         enum: [SessionMode.THEORY, SessionMode.PRACTICE],
         description: "THEORY for text/info, PRACTICE for exercises."
       }
@@ -41,14 +66,26 @@ export const analyzePageContent = async (imageBase64: string): Promise<AnalysisR
     required: ["title", "summary", "mode", "extractedText"]
   };
 
-  try {
-    const ai = getAiClient();
+  const ai = getAiClient();
+
+  // First attempt: try exact OCR extraction
+  const makeRequest = async (paraphrase: boolean) => {
+    const prompt = paraphrase
+      ? `You are helping a student study. Analyze this educational material image.
+1. Create a descriptive TITLE for this learning topic (your own words)
+2. Write a helpful SUMMARY explaining the key concepts (paraphrased)
+3. For extractedText: Write detailed study notes covering ALL concepts, formulas, definitions shown. Paraphrase for learning.
+4. Determine MODE: "THEORY" for explanatory content, "PRACTICE" for exercises
+
+CRITICAL: Output in the SAME LANGUAGE as source. Paraphrase - do not copy verbatim.`
+      : "Analyze this textbook page. 1. Extract the full text (OCR). 2. Determine topic and summary. 3. Decide mode. CRITICAL: Output language must match the page text.";
+
     const response = await ai.models.generateContent({
       model,
       contents: {
         parts: [
           { inlineData: { mimeType: "image/jpeg", data: imageBase64 } },
-          { text: "Analyze this textbook page. 1. Extract the full text (OCR). 2. Determine topic and summary. 3. Decide mode. CRITICAL: Output languages must match the page text." }
+          { text: prompt }
         ]
       },
       config: {
@@ -57,12 +94,74 @@ export const analyzePageContent = async (imageBase64: string): Promise<AnalysisR
       }
     });
 
-    const text = extractTextFromResponse(response);
-    return JSON.parse(text) as AnalysisResult;
-  } catch (error: any) {
-    console.error("Analysis failed:", error);
-    throw error;
+    return response;
+  };
+
+  // Try exact OCR first
+  let response = await makeRequest(false);
+  let isParaphrased = false;
+
+  // Check for RECITATION - if so, retry with paraphrasing
+  const candidate = (response as any)?.candidates?.[0];
+  if (candidate?.finishReason === 'RECITATION') {
+    console.log('RECITATION detected, retrying with paraphrase prompt...');
+    response = await makeRequest(true);
+    isParaphrased = true;
+
+    // Check if paraphrase also got RECITATION
+    const paraphraseCandidate = (response as any)?.candidates?.[0];
+    if (paraphraseCandidate?.finishReason === 'RECITATION') {
+      // Extract citation URLs from both attempts - check multiple possible paths
+      const extractCitations = (candidate: any): string[] => {
+        const urls: string[] = [];
+
+        // Try citationMetadata.citationSources (common path)
+        const sources1 = candidate?.citationMetadata?.citationSources || [];
+        for (const c of sources1) {
+          if (c.uri) urls.push(c.uri);
+          if (c.url) urls.push(c.url);
+        }
+
+        // Try citationMetadata.citations
+        const sources2 = candidate?.citationMetadata?.citations || [];
+        for (const c of sources2) {
+          if (c.uri) urls.push(c.uri);
+          if (c.url) urls.push(c.url);
+        }
+
+        // Try groundingMetadata
+        const grounding = candidate?.groundingMetadata?.groundingChunks || [];
+        for (const c of grounding) {
+          if (c.web?.uri) urls.push(c.web.uri);
+          if (c.web?.url) urls.push(c.web.url);
+        }
+
+        return urls;
+      };
+
+      console.log('[RECITATION] candidate1 full:', JSON.stringify(candidate, null, 2));
+      console.log('[RECITATION] candidate2 full:', JSON.stringify(paraphraseCandidate, null, 2));
+
+      const urls1 = extractCitations(candidate);
+      const urls2 = extractCitations(paraphraseCandidate);
+      console.log('[RECITATION] urls1:', urls1);
+      console.log('[RECITATION] urls2:', urls2);
+
+      const uniqueUrls = [...new Set([...urls1, ...urls2])];
+      console.log('[RECITATION] uniqueUrls:', uniqueUrls);
+
+      const error = new Error('RECITATION_BLOCKED');
+      (error as any).isRecitation = true;
+      (error as any).citationUrls = uniqueUrls;
+      (error as any).noRetry = true; // Signal to not retry this error
+      throw error;
+    }
   }
+
+  const text = extractTextFromResponse(response);
+  const result = JSON.parse(text) as AnalysisResult;
+  result.isParaphrased = isParaphrased;
+  return result;
 };
 
 interface GenerationParams {
